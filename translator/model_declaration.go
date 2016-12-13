@@ -53,6 +53,7 @@ type CDecl struct {
 	IsStatic   bool
 	IsTypedef  bool
 	IsDefine   bool
+	IsBitfield bool
 	Pos        token.Pos
 	Src        string
 }

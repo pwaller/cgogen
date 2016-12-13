@@ -219,6 +219,17 @@ func (gen *Generator) getPassRefSource(goStructName []byte, cStructName string, 
 		cgoSpec := gen.tr.CGoSpec(m.Spec, false)
 		const public = true
 		goName := "x." + string(gen.tr.TransformName(tl.TargetType, m.Name, public))
+		if m.IsBitfield {
+			fmt.Fprintf(buf, "C.set_bitfield_%s_%s(ref%2x, (C.int)(%s));\n", cStructName, m.Name, crc, goName)
+			fmt.Fprintf(buf, "\n")
+			s := fmt.Sprintf("inline void set_bitfield_%s_%s(struct %s *v, int x) { v->%s = x; }", cStructName, m.Name, cStructName, m.Name)
+			gen.submitHelper(&Helper{
+				Name:   fmt.Sprintf("set_bitfield_%s_%s", cStructName, m.Name),
+				Source: s,
+				Side:   CHSide,
+			})
+			continue
+		}
 		fromProxy, nillable := gen.proxyValueFromGo(memTip, goName, goSpec, cgoSpec)
 		if nillable {
 			fmt.Fprintf(buf, "if %s != nil {\n", goName)
@@ -292,6 +303,15 @@ func (gen *Generator) getDerefSource(goStructName []byte, cStructName string, sp
 		goName := "x." + string(gen.tr.TransformName(tl.TargetType, m.Name, public))
 		cgoName := fmt.Sprintf("x.ref%2x.%s", crc, m.Name)
 		cgoSpec := gen.tr.CGoSpec(m.Spec, false)
+		if m.IsBitfield {
+			fmt.Fprintf(buf, "%s = (%s)(C.get_bitfield_%s_%s(x.ref%2x))\n", goName, goSpec, cStructName, m.Name, crc)
+			gen.submitHelper(&Helper{
+				Name:   fmt.Sprintf("get_bitfield_%s_%s", cStructName, m.Name),
+				Source: fmt.Sprintf("inline %s get_bitfield_%s_%s(struct %s *v) { return v->%s; }", cgoSpec.String()[2:], cStructName, m.Name, cStructName, m.Name),
+				Side:   CHSide,
+			})
+			continue
+		}
 		toProxy, _ := gen.proxyValueToGo(memTip, goName, cgoName, goSpec, cgoSpec)
 		fmt.Fprintln(buf, toProxy)
 	}

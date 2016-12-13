@@ -208,9 +208,10 @@ func (t *Translator) structSpec(base *CTypeSpec, typ cc.Type, deep int) *CStruct
 			pos = m.Declarator.Pos()
 		}
 		spec.Members = append(spec.Members, &CDecl{
-			Name: memberName(i, m),
-			Spec: t.typeSpec(m.Type, deep+1, false),
-			Pos:  pos,
+			Name:       memberName(i, m),
+			Spec:       t.typeSpec(m.Type, deep+1, false),
+			Pos:        pos,
+			IsBitfield: m.Bits != 0,
 		})
 	}
 	return spec
