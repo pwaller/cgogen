@@ -7,15 +7,16 @@ import (
 )
 
 type GoTypeSpec struct {
-	Slices   uint8
-	Pointers uint8
-	InnerArr ArraySpec
-	OuterArr ArraySpec
-	Unsigned bool
-	Kind     CTypeKind
-	Base     string
-	Raw      string
-	Bits     uint16
+	Slices        uint8
+	Pointers      uint8
+	InnerArr      ArraySpec
+	OuterArr      ArraySpec
+	Unsigned      bool
+	Kind          CTypeKind
+	Base          string
+	Raw           string
+	Bits          uint16
+	BitFieldWidth int // Is a bitfield on a struct if nonzero.
 }
 
 func (spec *GoTypeSpec) splitPointers(ptrTip Tip, n uint8) {

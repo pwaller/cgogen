@@ -630,7 +630,13 @@ func (t *Translator) TipRxsForSpec(scope TipScope,
 	return
 }
 
-func (t *Translator) TranslateSpec(spec CType, tips ...Tip) GoTypeSpec {
+func (t *Translator) TranslateSpec(spec CType, tips ...Tip) (ret GoTypeSpec) {
+	defer func() {
+		if cTypeSpec, ok := spec.(*CTypeSpec); ok {
+			// HACK probably broken. Pass bit field info.
+			ret.BitFieldWidth = cTypeSpec.BitFieldWidth
+		}
+	}()
 	var ptrTip Tip
 	var typeTip Tip
 	for _, tip := range tips {

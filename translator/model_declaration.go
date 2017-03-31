@@ -46,15 +46,16 @@ type (
 )
 
 type CDecl struct {
-	Spec       CType
-	Name       string
-	Value      Value
-	Expression string
-	IsStatic   bool
-	IsTypedef  bool
-	IsDefine   bool
-	Pos        token.Pos
-	Src        string
+	Spec          CType
+	Name          string
+	Value         Value
+	Expression    string
+	IsStatic      bool
+	IsTypedef     bool
+	IsDefine      bool
+	Pos           token.Pos
+	Src           string
+	BitFieldWidth int // Is a bitfield on a struct if nonzero.
 }
 
 func (c CDecl) String() string {

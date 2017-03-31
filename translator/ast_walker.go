@@ -75,7 +75,7 @@ func (t *Translator) walkDeclaration(d *cc.Declaration) (declared []*CDecl) {
 func (t *Translator) declarator(d *cc.Declarator) *CDecl {
 	specifier := d.RawSpecifier()
 	decl := &CDecl{
-		Spec:      t.typeSpec(d.Type, 0, false),
+		Spec:      t.typeSpec(d.Type, 0, false, 0),
 		Name:      identifierOf(d.DirectDeclarator),
 		IsTypedef: specifier.IsTypedef(),
 		IsStatic:  specifier.IsStatic(),
@@ -228,7 +228,7 @@ func (t *Translator) structSpec(base *CTypeSpec, typ cc.Type, deep int) *CStruct
 		}
 		spec.Members = append(spec.Members, &CDecl{
 			Name: memberName(i, m),
-			Spec: t.typeSpec(m.Type, deep+1, false),
+			Spec: t.typeSpec(m.Type, deep+1, false, m.Bits),
 			Pos:  pos,
 		})
 	}
@@ -248,22 +248,23 @@ func (t *Translator) functionSpec(base *CTypeSpec, typ cc.Type, deep int) *CFunc
 		return spec
 	}
 	if ret := typ.Result(); ret != nil && ret.Kind() != cc.Void {
-		spec.Return = t.typeSpec(ret, deep+1, true)
+		spec.Return = t.typeSpec(ret, deep+1, true, 0)
 	}
 	params, _ := typ.Parameters()
 	for i, p := range params {
 		spec.Params = append(spec.Params, &CDecl{
 			Name: paramName(i, p),
-			Spec: t.typeSpec(p.Type, deep+1, false),
+			Spec: t.typeSpec(p.Type, deep+1, false, 0),
 			Pos:  p.Declarator.Pos(),
 		})
 	}
 	return spec
 }
 
-func (t *Translator) typeSpec(typ cc.Type, deep int, isRet bool) CType {
+func (t *Translator) typeSpec(typ cc.Type, deep int, isRet bool, bitFieldWidth int) CType {
 	spec := &CTypeSpec{
-		Const: typ.Specifier().IsConst(),
+		Const:         typ.Specifier().IsConst(),
+		BitFieldWidth: bitFieldWidth,
 	}
 	if !isRet {
 		spec.Raw = typedefNameOf(typ)

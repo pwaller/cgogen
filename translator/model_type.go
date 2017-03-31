@@ -6,18 +6,19 @@ import (
 )
 
 type CTypeSpec struct {
-	Raw      string
-	Base     string
-	Const    bool
-	Signed   bool
-	Unsigned bool
-	Short    bool
-	Long     bool
-	Complex  bool
-	Opaque   bool
-	Pointers uint8
-	InnerArr ArraySpec
-	OuterArr ArraySpec
+	Raw           string
+	Base          string
+	Const         bool
+	Signed        bool
+	Unsigned      bool
+	Short         bool
+	Long          bool
+	Complex       bool
+	Opaque        bool
+	Pointers      uint8
+	InnerArr      ArraySpec
+	OuterArr      ArraySpec
+	BitFieldWidth int
 }
 
 func (spec CTypeSpec) String() string {
@@ -74,6 +75,10 @@ func (c *CTypeSpec) GetBase() string {
 
 func (c *CTypeSpec) GetTag() string {
 	return ""
+}
+
+func (c *CTypeSpec) GetBitFieldWidth() int {
+	return c.BitFieldWidth
 }
 
 func (c *CTypeSpec) SetRaw(x string) {

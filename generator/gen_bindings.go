@@ -441,6 +441,24 @@ func (gen *Generator) proxyValueFromGo(memTip tl.Tip, name string,
 			"(%s)(unsafe.Pointer((*sliceHeader)(unsafe.Pointer(&%s)).Data)), cgoAllocsUnknown",
 			cgoSpec, name)
 		return
+	case isPlain && goSpec.BitFieldWidth != 0: // ex: bit field...
+		// log.Panicf("Have bitfield: %v - %v - %v", name, goSpec.BitFieldWidth, goSpec.String(), goSpec.Base)
+		// goSpec.Unsigned
+		if goSpec.Base != "int" {
+			panic("only int bitfields supported at the moment...")
+		}
+		goType := ""
+		if goSpec.Unsigned {
+			goType += "u"
+		}
+		goType += "int"
+		goType += fmt.Sprint(goSpec.BitFieldWidth)
+
+		// Hm. The Go compiler would usually want the C type here,
+		// but unfortunately when it's a bit field of a specific type,
+		// it demands the Go type. Weird.
+		proxy = fmt.Sprintf("(%s)(%s), cgoAllocsUnknown", goType, name)
+		return
 	case isPlain: // ex: byte, [4]byte
 		if (goSpec.Kind == tl.PlainTypeKind || goSpec.Kind == tl.EnumKind) &&
 			len(goSpec.OuterArr)+len(goSpec.InnerArr) == 0 && goSpec.Pointers == 0 {
@@ -1053,7 +1071,7 @@ var (
 			m   map[unsafe.Pointer]struct{}
 		}
 
-		var cgoAllocsUnknown = new(cgoAllocMap) 
+		var cgoAllocsUnknown = new(cgoAllocMap)
 
 		func (a *cgoAllocMap) Add(ptr unsafe.Pointer) {
 			a.mux.Lock()
